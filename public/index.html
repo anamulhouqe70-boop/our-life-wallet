@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Life Wallet</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+        body { background: #0f172a; color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 15px; }
+        .card { background: #1e293b; padding: 20px; border-radius: 16px; width: 100%; max-width: 380px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); text-align: center; }
+        input { width: 100%; padding: 12px; margin: 6px 0; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; outline: none; }
+        button { width: 100%; padding: 12px; background: #2563eb; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 8px; }
+        .hidden { display: none !important; }
+        
+        .user-info { background: #0f172a; padding: 12px; border-radius: 10px; margin-bottom: 12px; text-align: left; border: 1px solid #334155; }
+        .balance-card { background: linear-gradient(135deg, #2563eb, #1d4ed8); padding: 18px; border-radius: 12px; margin: 12px 0; }
+        .balance-card h2 { font-size: 26px; margin-top: 4px; }
+        
+        .actions-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 12px 0; }
+        .action-btn { background: #334155; padding: 10px; border-radius: 10px; font-size: 13px; font-weight: bold; cursor: pointer; border: 1px solid #475569; }
+        
+        .form-box { background: #0f172a; padding: 15px; border-radius: 10px; margin: 12px 0; border: 1px solid #334155; text-align: left; }
+        .history-box { background: #0f172a; padding: 12px; border-radius: 10px; margin: 12px 0; max-height: 200px; overflow-y: auto; text-align: left; border: 1px solid #334155; }
+        .history-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #1e293b; font-size: 12px; }
+        
+        .toggle-link { color: #38bdf8; font-size: 13px; cursor: pointer; display: block; margin-top: 10px; }
+        .cancel-btn { background: #64748b; margin-top: 5px; }
+    </style>
+</head>
+<body>
+
+    <!-- Auth Box -->
+    <div class="card" id="authBox">
+        <h2>Our Life Wallet</h2>
+        
+        <div id="loginForm">
+            <p style="color: #94a3b8; font-size: 14px; margin: 10px 0;">লগইন করুন</p>
+            <input type="text" id="loginPhone" value="01311843771" placeholder="ফোন নম্বর">
+            <input type="password" id="loginPin" value="12345" placeholder="পিন নম্বর">
+            <button onclick="doLogin()">Login</button>
+            <span class="toggle-link" onclick="toggleAuth(true)">নতুন অ্যাকাউন্ট খুলুন (Sign Up)</span>
+        </div>
+
+        <div id="signupForm" class="hidden">
+            <p style="color: #94a3b8; font-size: 14px; margin: 10px 0;">নতুন অ্যাকাউন্ট সাইন আপ</p>
+            <input type="text" id="regName" placeholder="আপনার নাম">
+            <input type="text" id="regPhone" placeholder="ফোন নম্বর">
+            <input type="password" id="regPin" placeholder="৪-৬ ডিজিটের পিন">
+            <button style="background: #16a34a;" onclick="doSignUp()">Sign Up</button>
+            <span class="toggle-link" onclick="toggleAuth(false)">ইতোমধ্যে অ্যাকাউন্ট আছে? লগইন করুন</span>
+        </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div class="card hidden" id="dashBox">
+        <div class="user-info">
+            <p style="color: #94a3b8; font-size: 11px;">অ্যাকাউন্ট হোল্ডার</p>
+            <h3 id="uName">Ariyan</h3>
+            <p id="uPhone" style="color: #38bdf8; font-size: 13px; margin-top: 2px;"></p>
+        </div>
+
+        <div class="balance-card">
+            <p style="font-size: 13px; opacity: 0.9;">বর্তমান ব্যালেন্স</p>
+            <h2>৳ <span id="uBalance">0</span></h2>
+        </div>
+
+        <div class="actions-grid">
+            <div class="action-btn" onclick="openForm('SEND_MONEY', '💸 সেন্ড মানি', 'প্রাপকের নম্বর', true)">💸 সেন্ড মানি</div>
+            <div class="action-btn" onclick="openForm('CASH_OUT', '📲 ক্যাশ আউট', 'এজেন্ট নম্বর', true)">📲 ক্যাশ আউট</div>
+            <div class="action-btn" onclick="openForm('RECHARGE', '💳 রিচার্জ', 'মোবাইল নম্বর', true)">💳 রিচার্জ</div>
+            <div class="action-btn" onclick="openForm('ADD_MONEY', '💰 এড মানি', '', false)">💰 এড মানি</div>
+        </div>
+        <div class="action-btn" style="margin-bottom: 10px;" onclick="showHistory()">📜 লেনদেন হিস্ট্রি</div>
+
+        <div class="form-box hidden" id="txnFormBox">
+            <h4 id="formTitle" style="color: #38bdf8; margin-bottom: 8px;">ফিচার</h4>
+            <input type="text" id="targetPhone" placeholder="নম্বর">
+            <input type="number" id="txnAmount" placeholder="টাকার পরিমাণ">
+            <input type="password" id="txnPin" placeholder="পিন দিন">
+            <button onclick="submitTransaction()">নিশ্চিত করুন</button>
+            <button class="cancel-btn" onclick="hideForms()">বাতিল</button>
+        </div>
+
+        <div class="history-box hidden" id="historyBox">
+            <h4 style="color: #38bdf8; margin-bottom: 8px;">📜 সাম্প্রতিক হিস্ট্রি</h4>
+            <div id="historyList"></div>
+            <button class="cancel-btn" onclick="hideForms()">বন্ধ করুন</button>
+        </div>
+
+        <button style="background: #ef4444;" onclick="location.reload()">লগআউট</button>
+    </div>
+
+    <script>
+        let currentUser = null;
+        let currentTxnType = '';
+
+        function toggleAuth(showSignUp) {
+            document.getElementById('loginForm').classList.toggle('hidden', showSignUp);
+            document.getElementById('signupForm').classList.toggle('hidden', !showSignUp);
+        }
+
+        async function doSignUp() {
+            const name = document.getElementById('regName').value;
+            const phone = document.getElementById('regPhone').value;
+            const pin = document.getElementById('regPin').value;
+
+            const res = await fetch('/api/signup', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, phone, pin })
+            });
+            const data = await res.json();
+            alert(data.message);
+            if (res.ok) toggleAuth(false);
+        }
+
+        async function doLogin() {
+            const phone = document.getElementById('loginPhone').value;
+            const pin = document.getElementById('loginPin').value;
+
+            const res = await fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone, pin })
+            });
+            const data = await res.json();
+
+            if (data.status === 'success') {
+                currentUser = data.user;
+                updateUI();
+                document.getElementById('authBox').classList.add('hidden');
+                document.getElementById('dashBox').classList.remove('hidden');
+            } else {
+                alert(data.message);
+            }
+        }
+
+        function updateUI() {
+            document.getElementById('uName').innerText = currentUser.name;
+            document.getElementById('uPhone').innerText = currentUser.phone;
+            document.getElementById('uBalance').innerText = currentUser.balance;
+            updateHistoryUI(currentUser.history);
+        }
+
+        function openForm(type, title, placeholder, needPhone) {
+            hideForms();
+            currentTxnType = type;
+            document.getElementById('formTitle').innerText = title;
+            const pInput = document.getElementById('targetPhone');
+            pInput.classList.toggle('hidden', !needPhone);
+            pInput.placeholder = placeholder;
+            document.getElementById('txnFormBox').classList.remove('hidden');
+        }
+
+        function showHistory() {
+            hideForms();
+            document.getElementById('historyBox').classList.remove('hidden');
+        }
+
+        function hideForms() {
+            document.getElementById('txnFormBox').classList.add('hidden');
+            document.getElementById('historyBox').classList.add('hidden');
+        }
+
+        async function submitTransaction() {
+            const targetPhone = document.getElementById('targetPhone').value;
+            const amount = document.getElementById('txnAmount').value;
+            const pin = document.getElementById('txnPin').value;
+
+            const res = await fetch('/api/transaction', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ senderPhone: currentUser.phone, type: currentTxnType, targetPhone, amount, pin })
+            });
+            const data = await res.json();
+
+            if (res.ok) {
+                alert(data.message);
+                currentUser = data.user;
+                updateUI();
+                hideForms();
+            } else {
+                alert(data.message);
+            }
+        }
+
+        function updateHistoryUI(history) {
+            const container = document.getElementById('historyList');
+            if (!history || history.length === 0) {
+                container.innerHTML = '<p style="color: #64748b; font-size: 12px;">কোনো লেনদেন পাওয়া যায়নি।</p>';
+                return;
+            }
+            container.innerHTML = history.map(item => `
+                <div class="history-item">
+                    <div>
+                        <strong>${item.type}</strong> (${item.details})<br>
+                        <span style="color: #64748b;">${item.date}</span>
+                    </div>
+                    <div style="color: ${item.isCredit ? '#22c55e' : '#ef4444'}; font-weight: bold;">
+                        ${item.isCredit ? '+' : '-'}৳${item.amount}
+                    </div>
+                </div>
+            `).join('');
+        }
+    </script>
+</body>
+</html>
